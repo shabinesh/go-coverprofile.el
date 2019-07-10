@@ -1,12 +1,6 @@
-(defun f()
-  "something"
-  (interactive)
-  (insert "if err != {\n\t\n}")
-  (backward-char 2))
-
-(global-hl-line-mode 1)
-(set-face-background 'hl-line "#3e4446")
-(global-hl-line-mode 0)
+;; (cover-highlight) will run the test with -coverprofile and use
+;; the output to hightlight the lines of a file by overlaying.
+;; (remove-highlight-cover) will remove all overlays
 
 (defun read-lines (filePath)
   "Return a list of lines of a file at filePath."
@@ -21,10 +15,9 @@
 (defun run-test-with-cover ()
   (interactive)
   (shell-command
-   (format "/usr/local/go/bin/go test %s -coverprofile=/tmp/go-test-emacs.out"
+   ;; assumes go is in the $PATH
+   (format "go test %s -coverprofile=/tmp/go-test-emacs.out"
 	   default-directory)))
-
-					; name.go:line.column,line.column numberOfStatements count
 
 (defun split-fields (line)
     (setq fields (split-string line "[:,\s]")))
@@ -38,19 +31,6 @@
     (list
      (truncate (string-to-number (nth 1 f)))
      (truncate (string-to-number (nth 2 f))))))
-
-(defun cover-highlight ()
-  (interactive)
-  (run-test-with-cover)
-  (setq lines (read-lines "/tmp/go-test-emacs.out"))
-  (while lines
-    (setq fields (split-fields (pop lines)))
-    (setq filename (get-filename fields))
-    (setq block (get-linenos fields))
-					;    (when (and (is-not-tested fields) (eq filename (buffer-file-name)))
-    (when (is-tested fields)
-      (message "here")
-      (highlight (pop block) (pop block)))))
     
 (defun pos-at-line-col (l c)
   (save-excursion
@@ -67,3 +47,15 @@
 (defun cover-highlight-stop ()
   (interactive)
   (remove-overlays))
+
+(defun cover-highlight ()
+  (interactive)
+  (run-test-with-cover)
+  (setq lines (read-lines "/tmp/go-test-emacs.out"))
+  (while lines
+    (setq fields (split-fields (pop lines)))
+    (setq filename (get-filename fields))
+    (setq block (get-linenos fields))
+    ;; (when (and (is-not-tested fields) (eq filename (buffer-file-name)))
+    (when (is-tested fields)
+      (highlight (pop block) (pop block)))))
