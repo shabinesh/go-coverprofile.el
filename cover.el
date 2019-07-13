@@ -16,7 +16,7 @@
   (interactive)
   (shell-command
    ;; assumes go is in the $PATH
-   (format "go test %s -coverprofile=/tmp/go-test-emacs.out"
+   (format "/usr/local/go/bin/go test %s -coverprofile=/tmp/go-test-emacs.out"
 	   default-directory)))
 
 (defun split-fields (line)
